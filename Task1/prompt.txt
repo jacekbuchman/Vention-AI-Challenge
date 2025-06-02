@@ -1,0 +1,26 @@
+Act as a database architecture consultant. Analyze these social media app requirements step by step:
+
+1. Core Requirements
+   - Must handle 10M+ users
+   - Data types: User profiles (JSON), posts (text/media), follower networks
+   - Performance: 80% read / 20% write operations. 
+   - It must support high data read speed.
+   - Scalability: Linear scaling with user growth
+
+2. Analysis Process
+   a) Identify key data relationships
+   b) Map read/write patterns to database strengths
+   c) Evaluate scalability mechanisms
+   d) Compare database types (document vs. graph vs. relational vs. hybrid)
+
+3. Reasoning Guidance
+   - For each requirement category:
+      - "First, consider [specific aspect] because..."
+      - "This suggests [database type] would be suitable due to..."
+      - "However, potential limitations include..."
+   - Use comparative phrases: "While X excels at Y, Z offers better performance for..."
+   - Conclude with: "Therefore, the optimal choice is... because..."
+
+4. Expected Output Format
+   - Bulleted reasoning chain
+   - Final recommendation with technical justification
