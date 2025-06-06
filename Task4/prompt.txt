@@ -1,0 +1,67 @@
+Code Analysis Task
+
+Act as three expert personas sequentially to analyze the above code. For each role:
+1. Identify **critical issues** and **improvement opportunities**
+2. Provide **line-specific examples** (where possible)
+3. Prioritize **actionable recommendations**
+
+---
+
+1. Experienced Developer Perspective
+
+Focus Areas: Code quality | Maintainability | SOLID principles | Error handling
+
+Analysis Requirements:
+- Highlight anti-patterns or code smells  
+- Suggest architecture improvements  
+- Identify missing validation checks  
+- Evaluate test coverage adequacy  
+
+---
+
+2. Security Engineer Perspective
+
+Focus Areas: Injection vulnerabilities | Data sanitization | Auth mechanisms | Encryption standards
+
+Analysis Requirements:
+- Check for OWASP Top 10 risks  
+- Audit sensitive data handling  
+- Verify proper session management  
+- Assess logging practices for PII exposure  
+
+---
+
+3. Performance Specialist Perspective
+
+Focus Areas: Algorithm complexity | Memory leaks | Concurrency issues | I/O bottlenecks
+
+Analysis Requirements:
+- Profile potential CPU/memory hotspots  
+- Evaluate database query efficiency  
+- Check for unnecessary object creation  
+- Suggest caching opportunities  
+
+---
+
+Output Format Requirements
+For each expert section:
+1. Start with: criticality rating (! Low | !! Medium | !!! High)
+2. Use code snippets when referencing specific lines  
+3. Provide before/after examples for key recommendations  
+4. Include priority markers (Immediate | Next Sprint | Technical Debt)
+
+Example format:
+
+Experienced Developer Report
+
+!!! High Priority
+Issue: Missing null checks in user input processing (Lines 42-47)
+Recommendation:
+Immediate: Implement guard clauses before data transformation
+Before:
+UserData raw = request.getRawData();
+After:
+if(request.getRawData() == null) throw new InvalidInputException();
+
+
+
