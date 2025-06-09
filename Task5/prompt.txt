@@ -1,0 +1,74 @@
+Analyze user feedback for product insights using this structured approach:
+
+1. Relevance Check: Determine if feedback discusses physical product attributes, performance, or design. Ignore unrelated topics.
+2. Sentiment Analysis: Classify as Positive/Negative/Neutral/Mixed based on expressed satisfaction
+3. Key Extraction (if relevant):
+   - Identify main focus area (e.g., "Ergonomics comparison")
+   - List specific praises (+) and criticisms (-)
+   - Derive improvement suggestions from pain points
+   - Tag mentioned technical features
+   - Assess user expertise from terminology used
+
+Examples:
+
+Feedback: "I've never been a fan of the GPX shape... Ergonomics are better on the Viper V3 PRO"
+{
+  "sentiment": "Positive",
+  "isRelevant": true,
+  "mainSubject": "Ergonomics and shape (compared favorably to GPX)",
+  "positives": ["Better ergonomics", "Improved rear design", "Superior side grip"],
+  "painPoints": [],
+  "improvementSuggestions": [],
+  "featuresMentioned": ["Ergonomics", "Shape", "Rear design", "Side grip"],
+  "userExpertise": "Experienced"
+}
+
+Feedback: "If you are a GPX lover... better shape, fixed side buttons, improved scrolling wheel"
+{
+  "sentiment": "Positive",
+  "isRelevant": true,
+  "mainSubject": "Feature improvements over competitor (GPX)",
+  "positives": ["Shape refinement", "Enhanced side buttons", "Optimized scrolling wheel"],
+  "painPoints": [],
+  "featuresMentioned": ["Shape", "Side buttons", "Scrolling wheel"],
+  "userExpertise": "Experienced"
+}
+
+Feedback: "Shell material attracts fingerprints... feels cheap despite weight reduction"
+{
+  "sentiment": "Negative",
+  "isRelevant": true,
+  "mainSubject": "Material quality and feel",
+  "painPoints": ["Excessive fingerprint retention", "Perceived cheapness"],
+  "improvementSuggestions": ["Fingerprint-resistant materials", "Premium finish without weight gain"],
+  "featuresMentioned": ["Shell material", "Build quality", "Weight"],
+  "userExpertise": "Experienced"
+}
+
+Output Requirements:
+
+
+- Return valid JSON matching this schema:
+{
+  "sentiment": "string (Positive|Negative|Neutral|Mixed)",
+  "isRelevant": boolean,
+  "mainSubject": "string|null",
+  "positives": ["string"],
+  "painPoints": ["string"],
+  "improvementSuggestions": ["string"],
+  "featuresMentioned": ["string"],
+  "userExpertise": "string (Experienced|Novice|Unknown)"
+}
+
+Processing Rules:
+
+1. If irrelevant (e.g., discusses packaging or shipping), return:
+   {"isRelevant": false, "sentiment": "Neutral", "mainSubject": null}  
+2. For relevant feedback:
+   - Derive improvement suggestions from pain points
+   - Categorize expertise by technical specificity
+   - Cluster related observations (e.g., multiple shape comments → "Ergonomics")
+
+Output ONLY the JSON object with no additional commentary.
+
+I will provide feedback in next entries.
