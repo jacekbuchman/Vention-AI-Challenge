@@ -1,0 +1,34 @@
+{
+  "name": "sea-battle-game",
+  "version": "2.0.0",
+  "description": "A modernized Sea Battle (Battleship) CLI game implementation",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage"
+  },
+  "keywords": ["battleship", "sea-battle", "game", "cli", "javascript", "es6"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "transform": {},
+    "testMatch": ["**/tests/**/*.test.js"],
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 
