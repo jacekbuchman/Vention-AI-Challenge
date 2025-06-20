@@ -41,7 +41,8 @@ class ProductFilteringSystem:
     
     def filter_products(self, category: Optional[str] = None, max_price: Optional[float] = None, 
                        min_rating: Optional[float] = None, in_stock_only: Optional[bool] = None,
-                       product_names: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+                       product_names: Optional[List[str]] = None, limit: Optional[int] = None,
+                       sort_by: Optional[str] = None, ascending: Optional[bool] = True) -> List[Dict[str, Any]]:
         """
         Filter products based on the given criteria.
         This function will be called by OpenAI with structured arguments.
@@ -74,6 +75,19 @@ class ProductFilteringSystem:
             filtered_products = [p for p in filtered_products 
                                if any(keyword in p['name'].lower() for keyword in name_keywords)]
         
+        # Sort products if requested
+        if sort_by:
+            if sort_by == "price":
+                filtered_products.sort(key=lambda x: x['price'], reverse=not ascending)
+            elif sort_by == "rating":
+                filtered_products.sort(key=lambda x: x['rating'], reverse=not ascending)
+            elif sort_by == "name":
+                filtered_products.sort(key=lambda x: x['name'].lower(), reverse=not ascending)
+        
+        # Limit number of results if requested
+        if limit and limit > 0:
+            filtered_products = filtered_products[:limit]
+        
         return filtered_products
     
     def get_function_schema(self) -> Dict[str, Any]:
@@ -105,6 +119,19 @@ class ProductFilteringSystem:
                         "type": "array",
                         "items": {"type": "string"},
                         "description": "Specific product names or keywords to search for"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of products to return (e.g., 1 for 'show me one product', 5 for 'show me top 5')"
+                    },
+                    "sort_by": {
+                        "type": "string",
+                        "description": "Field to sort by: 'price', 'rating', or 'name'",
+                        "enum": ["price", "rating", "name"]
+                    },
+                    "ascending": {
+                        "type": "boolean",
+                        "description": "Sort order: true for ascending (lowest first), false for descending (highest first)"
                     }
                 },
                 "required": []
@@ -125,6 +152,8 @@ class ProductFilteringSystem:
         Price range: {price_range}
         Rating range: 1.0 - 5.0
         
+        CRITICAL RULE: Pay attention to the definite article "THE" - it indicates the user wants exactly ONE specific product!
+        
         IMPORTANT: When users make requests, you MUST analyze ALL aspects of their query and call the filter_products function with ALL appropriate parameters:
         
         1. PRICE FILTERING: Always consider price-related terms:
@@ -143,10 +172,33 @@ class ProductFilteringSystem:
         
         4. CATEGORY FILTERING: Map user terms to exact categories
         
-        5. NAME FILTERING: For specific product mentions
-        
-        Consider synonyms and related terms (e.g., "phone" → "smartphone", "laptop" → "Gaming Laptop").
-        ALWAYS apply ALL relevant filters based on user intent. Do not ignore any filtering criteria.
+                 5. NAME FILTERING: For specific product mentions
+         
+         6. QUANTITY LIMITING: Pay attention to quantity requests:
+            - "show me one", "find one", "give me one" → set limit to 1
+            - "show me THE [superlative]" (e.g., "show me THE cheapest", "show me THE highest rated") → set limit to 1
+            - "top 5", "best 3", "first 10" → set limit to the specified number
+            - No specific quantity mentioned → don't set limit (show all matching)
+         
+         7. SORTING: Consider sorting requests:
+            - "cheapest", "lowest price", "THE cheapest" → sort_by="price", ascending=true
+            - "most expensive", "highest price", "THE most expensive" → sort_by="price", ascending=false  
+            - "lowest rated", "worst rated", "THE lowest rated" → sort_by="rating", ascending=true
+            - "highest rated", "best rated", "THE highest rated", "THE best rated" → sort_by="rating", ascending=false
+            - "alphabetical" → sort_by="name", ascending=true
+            
+                     IMPORTANT: When user says "show me THE [superlative]" (using definite article "the"), they want exactly ONE product - always set limit=1.
+            
+            EXAMPLES:
+            - "show me highest rated products" → NO limit (show all)
+            - "show me THE highest rated product" → limit=1 (show only one)
+            - "find cheapest items" → NO limit (show all)  
+            - "find THE cheapest item" → limit=1 (show only one)
+            - "lowest rated fitness equipment" → NO limit (show all)
+            - "THE lowest rated fitness product" → limit=1 (show only one)
+         
+         Consider synonyms and related terms (e.g., "phone" → "smartphone", "laptop" → "Gaming Laptop").
+         ALWAYS apply ALL relevant filters AND sorting/limiting based on user intent. Do not ignore any criteria.
         """
         
         try:
