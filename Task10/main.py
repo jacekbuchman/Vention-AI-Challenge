@@ -15,7 +15,7 @@ class ProductFilteringSystem:
         """Initialize the product filtering system."""
         self.products_file = products_file
         self.products = self.load_products()
-        self.client = self.setup_openai_client()
+        self.client = None
         
     def load_products(self) -> List[Dict[str, Any]]:
         """Load products from JSON file."""
@@ -64,9 +64,9 @@ class ProductFilteringSystem:
                                if p['rating'] >= min_rating]
         
         # Filter by stock availability
-        if in_stock_only:
+        if in_stock_only is not None:
             filtered_products = [p for p in filtered_products 
-                               if p['in_stock']]
+                               if p['in_stock'] == in_stock_only]
         
         # Filter by specific product names (for when user mentions specific products)
         if product_names:
@@ -113,6 +113,10 @@ class ProductFilteringSystem:
     
     def search_products(self, user_query: str) -> List[Dict[str, Any]]:
         """Use OpenAI function calling to filter products based on user query."""
+        # Initialize OpenAI client if not already done
+        if self.client is None:
+            self.client = self.setup_openai_client()
+            
         # Create system message with context about available products
         categories = list(set(p['category'] for p in self.products))
         price_range = f"${min(p['price'] for p in self.products):.2f} - ${max(p['price'] for p in self.products):.2f}"
@@ -121,9 +125,28 @@ class ProductFilteringSystem:
         Price range: {price_range}
         Rating range: 1.0 - 5.0
         
-        When users make requests, analyze their preferences and call the filter_products function with appropriate parameters.
-        Consider synonyms and related terms (e.g., "phone" -> "smartphone", "cheap" -> low max_price, "good quality" -> high min_rating).
-        If user mentions "available" or "in stock", set in_stock_only to true.
+        IMPORTANT: When users make requests, you MUST analyze ALL aspects of their query and call the filter_products function with ALL appropriate parameters:
+        
+        1. PRICE FILTERING: Always consider price-related terms:
+           - "under $X", "below $X", "less than $X" → set max_price to X
+           - "cheap", "affordable" → set max_price to a reasonable low value
+           - "expensive", "premium" → set min_price if available, or high-end filtering
+        
+        2. RATING FILTERING: Always consider quality-related terms:
+           - "good quality", "high rating", "well-rated" → set min_rating to 4.0 or higher
+           - "excellent", "best" → set min_rating to 4.5 or higher
+           - "rating above X" → set min_rating to X
+        
+                 3. STOCK FILTERING: Always consider availability terms:
+            - "available", "in stock", "can buy now" → set in_stock_only to true
+            - "out of stock", "not available", "only out of stock" → set in_stock_only to false
+        
+        4. CATEGORY FILTERING: Map user terms to exact categories
+        
+        5. NAME FILTERING: For specific product mentions
+        
+        Consider synonyms and related terms (e.g., "phone" → "smartphone", "laptop" → "Gaming Laptop").
+        ALWAYS apply ALL relevant filters based on user intent. Do not ignore any filtering criteria.
         """
         
         try:
@@ -161,9 +184,12 @@ class ProductFilteringSystem:
             return "No products found matching your criteria."
         
         result = f"Filtered Products ({len(products)} found):\n"
+        result += "-" * 80 + "\n"
         for i, product in enumerate(products, 1):
-            stock_status = "In Stock" if product['in_stock'] else "Out of Stock"
-            result += f"{i}. {product['name']} - ${product['price']:.2f}, Rating: {product['rating']}, {stock_status}\n"
+            stock_status = "✅ In Stock" if product['in_stock'] else "❌ Out of Stock"
+            rating_stars = "⭐" * int(product['rating'])
+            result += f"{i:2d}. {product['name']:<35} | ${product['price']:>7.2f} | {rating_stars} ({product['rating']}) | {stock_status}\n"
+        result += "-" * 80 + "\n"
         
         return result
     
